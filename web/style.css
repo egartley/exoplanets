@@ -1,35 +1,90 @@
+/* TODO: dark/light mode
+@media (prefers-color-scheme:dark) */
+
 html {
     background: black;
     font-family: sans-serif;
-    color: whitesmoke;
+    color: whitesmoke
 }
 
 div.list-container {
     display: flex;
     flex-flow: column nowrap;
     width: 500px;
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: auto
+}
+
+div.list-container.list-container-empty {
+    line-height: 500px;
+    color: grey;
+    vertical-align: middle;
+    text-align: center
+}
+
+div.exo-search-container {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center
 }
 
 div.list-item {
-    border: 1px solid grey;
+    /* border: 1px solid grey; */
     display: flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
-    align-content: center;
+    align-content: center
+}
+
+div.list-item:nth-child(even) {
+    background-color: #171717
 }
 
 div.left {
-    border: 1px solid red;
+    /* border: 1px solid red; */
     width: 100px;
     height: 100px;
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: space-evenly
 }
 
 div.right {
-    border: 1px solid lightgreen;
+    /*border: 1px solid lightgreen;*/
     display: flex;
-    flex-flow: column nowrap;
+    flex-flow: column nowrap
+}
+
+div.visual {
+    border-radius: 50%
+}
+
+span.title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 6px
+}
+
+span.list-value-label {
+    color: grey
+}
+
+span.search-by {
+    color: lightgrey;
+    margin: 0 12px
+}
+
+input.exo-search {
+    color: whitesmoke;
+    padding: 9px;
+    background-color: black;
+    border: 1px solid darkgrey;
+    width: 256px
+}
+
+select.exo-search-type {
+    color: whitesmoke;
+    background-color: black
 }
