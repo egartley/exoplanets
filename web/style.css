@@ -1,0 +1,35 @@
+html {
+    background: black;
+    font-family: sans-serif;
+    color: whitesmoke;
+}
+
+div.list-container {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 500px;
+}
+
+div.list-item {
+    border: 1px solid grey;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+}
+
+div.left {
+    border: 1px solid red;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+div.right {
+    border: 1px solid lightgreen;
+    display: flex;
+    flex-flow: column nowrap;
+}
