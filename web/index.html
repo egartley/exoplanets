@@ -12,15 +12,16 @@
     <body>
         <h2 class="exo-title">Exoplanets</h2>
         <div class="exo-search-container">
-            <input name="exo-search" class="exo-search" onkeyup="exoSearch(event)">
+            <input name="exo-search" class="exo-search" onkeyup="exoKeyUp(event)">
             <span class="search-by">Search by:</span>
             <select name="exo-search-type" class="exo-search-type">
-                <option value="exoplanet-name">Name</option>
-                <option value="exoplanet-star">Host Star</option>
+                <option value="pl_name">Name</option>
+                <option value="pl_hostname">Host Star</option>
+                <option value="pl_disc">Discovery Year</option>
             </select>
         </div>
         <div class="list-container list-container-empty">
-            <span class="list-start">Search results will be shown here</span>
+            <span class="list-start">Results will be listed here</span>
             <span class="list-none" style="display:none">No results were found</span>
         </div>
     </body>
