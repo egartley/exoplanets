@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Exoplanets</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <link href="style.css" rel="stylesheet" type="text/css">
-        <script src="jquery.js" type="application/javascript"></script>
-        <script src="script.js" type="application/javascript"></script>
-    </head>
-    <body>
-        <h2 class="exo-title">Exoplanets</h2>
+<head>
+    <title>Exoplanets</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="jquery.js" type="application/javascript"></script>
+    <script src="script.js" type="application/javascript"></script>
+</head>
+<body>
+    <div class="exo-container" id="search">
+        <h2>Exoplanets</h2>
         <div class="exo-search-container">
             <input name="exo-search" class="exo-search" onkeyup="exoKeyUp(event)">
             <span class="search-by">Search by:</span>
@@ -24,5 +25,19 @@
             <span class="list-start">Results will be listed here</span>
             <span class="list-none" style="display:none">No results were found</span>
         </div>
-    </body>
+    </div>
+    <div class="exo-container" id="details" style="display:none">
+        <div class="main-card">
+            <div class="main-card-text">
+                <h1>Exoplanet Name</h1>
+                <div class="main-details-container">
+                    <div class="main-details-labels"></div>
+                    <div class="main-details-values"></div>
+                </div>
+            </div>
+            <div class="main-card-visual"></div>
+        </div>
+        <div class="details-card"></div>
+    </div>
+</body>
 </html>

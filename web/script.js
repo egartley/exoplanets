@@ -8,6 +8,7 @@ const MAX_ORBIT = 1000
 // const GOLDEN = 0.618033988749895
 const PC_TO_LY = 3.26156378
 const EMPTY_VALUE = "EMPTY"
+const BASE_URL = "/exo/"
 const SEARCH_TYPES = ["pl_name", "pl_hostname", "pl_disc"]
 
 let VALUES = []
@@ -22,7 +23,7 @@ let DATA = []
  */
 function get(value, exoplanet) {
     const i = VALUES.indexOf(value)
-    return i !== -1 ? exoplanet[i] : EMPTY_VALUE
+    return i !== -1 ? (exoplanet[i] !== "" ? exoplanet[i] : EMPTY_VALUE) : EMPTY_VALUE
 }
 
 function getListItemDataHTML(label, value, prettyName) {
@@ -45,6 +46,14 @@ function getListItemHTML(exoplanet) {
     // truncate to two decimals
     distance = distance.toFixed(2)
     return "<div class=\"list-item\" id=\"" + rowid + "\"><div class=\"left\"><div class=\"visual\"></div></div><div class=\"right\"><span class=\"title\">" + name + "</span>" + getListItemDataHTML("Found in", year, "year") + getListItemDataHTML("Distance", distance + " ly", "distance") + "</div></div>"
+}
+
+function getMainDetailLabelHTML(label) {
+    return "<span class=\"value-label\">" + label + ":</span>"
+}
+
+function getMainDetailValueHTML(value) {
+    return "<span>" + value + "</span>"
 }
 
 // Credit: https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
@@ -103,6 +112,11 @@ function hsvToRgb(h, s, v) {
     return "rgb(" + Math.round(r * 255) + ", " + Math.round(g * 255) + ", " + Math.round(b * 255) + ")"
 }
 
+function getURLParameter(parameter) {
+    const all = new URLSearchParams(window.location.search)
+    return all.has(parameter) ? all.get(parameter) : ""
+}
+
 /**
  * Scales, or "converts", a number in one range into another
  *
@@ -133,7 +147,7 @@ function setVisual(exoplanet) {
     let radius = get("pl_rade", exoplanet);
     let orbit = get("pl_orbper", exoplanet);
     const rowid = get("rowid", exoplanet);
-    const visual = $("div.list-item#" + rowid + " > div.left > div.visual");
+    let visual = $("div.list-item#" + rowid + " > div.left > div.visual");
 
     // determine color
     if (orbit > MAX_ORBIT) {
@@ -163,6 +177,7 @@ function list_readyResults() {
     $("div.list-container span.list-start").hide()
     $("div.list-container span.list-none").hide()
     $("div.list-container").removeClass("list-container-empty")
+    $("div.list-container > div.list-item").off()
     $("div.list-container > div.list-item").remove()
 }
 
@@ -173,6 +188,7 @@ function list_noResults() {
     $("div.list-container > div.list-item").remove()
     $("div.list-container").addClass("list-container-empty")
     $("div.list-container span.list-none").show()
+    $("div.list-container span.list-start").hide()
 }
 
 function exoKeyUp(e) {
@@ -226,6 +242,7 @@ function exoSearch(query, type) {
             }
             list.append(getListItemHTML(exoplanet))
             setVisual(exoplanet)
+            registerListItemClick(get("rowid", exoplanet))
         }
     })
     if (!cleared) {
@@ -233,14 +250,54 @@ function exoSearch(query, type) {
     }
 }
 
+function registerListItemClick(rowid) {
+    $("div.list-container > div.list-item#" + String(rowid)).on("click", function (event) {
+        listItemClick(rowid)
+    })
+}
+
+function listItemClick(rowid) {
+    window.location = BASE_URL + "?id=" + String(rowid)
+}
+
+function tryMainDetail(value, label) {
+    console.log("\"" + value + "\"")
+    $("div.main-details-container div.main-details-labels").append(getMainDetailLabelHTML(label))
+    $("div.main-details-container div.main-details-values").append(getMainDetailValueHTML(value === EMPTY_VALUE ? "Unknown" : value))
+}
+
+function go_details(rowid) {
+    $("div.exo-container#search").hide()
+    $("div.exo-container#details").show()
+    let exoplanet = []
+    for (let exo of DATA) {
+        if (get("rowid", exo) === rowid) {
+            exoplanet = exo
+            break
+        }
+    }
+    const name = get("pl_name", exoplanet)
+    $("div.main-card-text > h1").html(name)
+    tryMainDetail(get("st_dist", exoplanet), "Distance (ly)")
+    tryMainDetail(get("pl_orbper", exoplanet), "Orbit (days)")
+    tryMainDetail(get("pl_masse", exoplanet), "Mass (Earth)")
+    tryMainDetail(get("pl_rade", exoplanet), "Radius (Earth)")
+}
+
 function go_test() {
-    list_readyResults()
+    const id = getURLParameter("id")
+    if (id === "") {
+        list_noResults()
+    } else {
+        go_details(id)
+    }
+    /*list_readyResults()
     $.each(DATA, function (index, exoplanet) {
         if (index < TEST_LIMIT) {
             $("div.list-container").append(getListItemHTML(exoplanet))
             setVisual(exoplanet)
         }
-    })
+    })*/
 }
 
 /*function go() {

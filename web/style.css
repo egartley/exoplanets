@@ -64,21 +64,23 @@ div.right {
     flex-flow: column nowrap
 }
 
-div.visual {
+div.visual,
+div.main-card-visual {
     border-radius: 50%
 }
 
-span.title {
+div.list-container span.title {
     font-size: 22px;
     font-weight: bold;
     margin-bottom: 6px
 }
 
-span.list-value-label {
+div.list-container span.list-value-label,
+div.main-card div.main-card-text span.value-label {
     color: grey
 }
 
-span.search-by {
+div.list-container span.search-by {
     color: lightgrey;
     margin: 0 12px
 }
@@ -94,4 +96,33 @@ input.exo-search {
 select.exo-search-type {
     color: whitesmoke;
     background-color: black
+}
+
+div.main-card,
+div.details-card {
+    display: flex
+}
+
+div.main-details-container {
+    display: flex
+}
+
+div.main-details-labels,
+div.main-details-values {
+    display: flex;
+    flex-direction: column
+}
+
+div.main-details-labels > span,
+div.main-details-values > span {
+    line-height: 1.375em
+}
+
+div.main-details-labels {
+    text-align: right
+}
+
+div.main-details-values {
+    margin-left: 8px;
+    text-align: left
 }
