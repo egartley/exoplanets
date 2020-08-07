@@ -1,8 +1,12 @@
-const TEST_LIMIT = 20
+// const TEST_LIMIT = 20
 const MIN_RAD = 1
 const MAX_RAD = 2
+const MIN_RAD2 = 0.65
+const MAX_RAD2 = 3.1
 const MIN_VISUAL = 24
 const MAX_VISUAL = 72
+const MIN_VISUAL2 = 72
+const MAX_VISUAL2 = 256
 const MIN_ORBIT = 1
 const MAX_ORBIT = 1000
 // const GOLDEN = 0.618033988749895
@@ -138,16 +142,9 @@ function scaled(x, r1Min, r1Max, r2Min, r2Max) {
     return r2Min + (r2Max - r2Min) * (x - r1Min) / (r1Max - r1Min)
 }
 
-/**
- * Sets the visual representation for the given exoplanet in its list item. Color is determined by orbitial period and size is determined by the exoplanet's radius
- *
- * @param exoplanet The exoplanet to set the visual for
- */
-function setVisual(exoplanet) {
-    let radius = get("pl_rade", exoplanet);
-    let orbit = get("pl_orbper", exoplanet);
-    const rowid = get("rowid", exoplanet);
-    let visual = $("div.list-item#" + rowid + " > div.left > div.visual");
+function setVisual(exoplanet, visual, minRad, maxRad, minSize, maxSize) {
+    let radius = get("pl_rade", exoplanet)
+    let orbit = get("pl_orbper", exoplanet)
 
     // determine color
     if (orbit > MAX_ORBIT) {
@@ -155,15 +152,17 @@ function setVisual(exoplanet) {
     } else if (orbit < MIN_ORBIT) {
         orbit = MIN_ORBIT
     }
-    const color = hsvToRgb(scaled(orbit, MIN_ORBIT, MAX_ORBIT, 0, 360), 0.7, 0.95);
+    const color = hsvToRgb(scaled(orbit, MIN_ORBIT, MAX_ORBIT, 0, 360), 0.7, 0.95)
 
     // determine size
-    if (radius > MAX_RAD) {
-        radius = MAX_RAD
-    } else if (radius < MIN_RAD) {
-        radius = MIN_RAD
+    if (radius === EMPTY_VALUE) {
+        radius = minRad + ((maxRad - minRad) / 2)
+    } else if (radius > maxRad) {
+        radius = maxRad
+    } else if (radius < minRad) {
+        radius = minRad
     }
-    const size = Math.round(scaled(radius, MIN_RAD, MAX_RAD, MIN_VISUAL, MAX_VISUAL));
+    const size = Math.round(scaled(radius, minRad, maxRad, minSize, maxSize))
 
     visual.css("width", size + "px")
     visual.css("height", size + "px")
@@ -241,8 +240,9 @@ function exoSearch(query, type) {
                 cleared = true
             }
             list.append(getListItemHTML(exoplanet))
-            setVisual(exoplanet)
-            registerListItemClick(get("rowid", exoplanet))
+            const rowid = get("rowid", exoplanet)
+            setVisual(exoplanet, $("div.list-item#" + rowid + " > div.left > div.visual"), MIN_RAD, MAX_RAD, MIN_VISUAL, MAX_VISUAL)
+            registerListItemClick(rowid)
         }
     })
     if (!cleared) {
@@ -261,7 +261,6 @@ function listItemClick(rowid) {
 }
 
 function tryMainDetail(value, label) {
-    console.log("\"" + value + "\"")
     $("div.main-details-container div.main-details-labels").append(getMainDetailLabelHTML(label))
     $("div.main-details-container div.main-details-values").append(getMainDetailValueHTML(value === EMPTY_VALUE ? "Unknown" : value))
 }
@@ -276,12 +275,15 @@ function go_details(rowid) {
             break
         }
     }
-    const name = get("pl_name", exoplanet)
-    $("div.main-card-text > h1").html(name)
+    $("div.main-card-text > h1").html(get("pl_name", exoplanet))
     tryMainDetail(get("st_dist", exoplanet), "Distance (ly)")
     tryMainDetail(get("pl_orbper", exoplanet), "Orbit (days)")
     tryMainDetail(get("pl_masse", exoplanet), "Mass (Earth)")
     tryMainDetail(get("pl_rade", exoplanet), "Radius (Earth)")
+    tryMainDetail(get("pl_orbeccen", exoplanet), "Eccentricity")
+    tryMainDetail(get("pl_disc", exoplanet) + " by " + get("pl_discmethod", exoplanet), "Discovered")
+
+    setVisual(exoplanet, $("div.main-card > div.main-card-visual"), MIN_RAD2, MAX_RAD2, MIN_VISUAL2, MAX_VISUAL2)
 }
 
 function go_test() {
