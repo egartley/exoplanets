@@ -1,16 +1,22 @@
-// const TEST_LIMIT = 20
 const MIN_RAD = 1
 const MAX_RAD = 2
-const MIN_RAD2 = 0.65
-const MAX_RAD2 = 3.1
 const MIN_VISUAL = 24
 const MAX_VISUAL = 72
+const MIN_RAD2 = 0.65
+const MAX_RAD2 = 3.1
 const MIN_VISUAL2 = 72
 const MAX_VISUAL2 = 256
 const MIN_ORBIT = 1
 const MAX_ORBIT = 1000
-// const GOLDEN = 0.618033988749895
-const PC_TO_LY = 3.26156378
+
+const PARSEC_LIGHTYEAR = 3.26156378
+const SOL_MAG = 4.83
+const POGSON = -2.5
+const FLUX_INNER = 1.1
+const FLUX_OUTTER = 0.53
+const SPECTRAL_TYPES = ["B", "A", "F", "G", "K", "M"]
+const SPECTRAL_BC = [-2.0, -0.3, -0.15, -0.4, -0.8, -2.0]
+
 const EMPTY_VALUE = "EMPTY"
 const BASE_URL = "/exo/"
 const SEARCH_TYPES = ["pl_name", "pl_hostname", "pl_disc"]
@@ -46,7 +52,7 @@ function getListItemHTML(exoplanet) {
     const year = get("pl_disc", exoplanet)
     let distance = get("st_dist", exoplanet)
     // distance is in parsecs, so convert to lightyears
-    distance *= PC_TO_LY
+    distance *= PARSEC_LIGHTYEAR
     // truncate to two decimals
     distance = distance.toFixed(2)
     return "<div class=\"list-item\" id=\"" + rowid + "\"><div class=\"left\"><div class=\"visual\"></div></div><div class=\"right\"><span class=\"title\">" + name + "</span>" + getListItemDataHTML("Found in", year, "year") + getListItemDataHTML("Distance", distance + " ly", "distance") + "</div></div>"
@@ -119,6 +125,46 @@ function hsvToRgb(h, s, v) {
 function getURLParameter(parameter) {
     const all = new URLSearchParams(window.location.search)
     return all.has(parameter) ? all.get(parameter) : ""
+}
+
+// Credit: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/log
+/**
+ * Returns the logarithm with the given base and value
+ *
+ * @param base The base to use
+ * @param x The number to calculate the logarithm of
+ * @returns {number} log_base(x)
+ */
+function getBaseLog(base, x) {
+    return Math.log(x) / Math.log(base);
+}
+
+// Credit: https://www.planetarybiology.com/calculating_habitable_zone.html
+/**
+ * Returns an array containing the inner and outer distance of the exoplanet's star's habitable zone in terms of AU
+ *
+ * @param exoplanet The exoplanet in which to use its star's data
+ * @returns {number[]} [inner, outer]
+ */
+function getHabitableZone(exoplanet) {
+    const gmag = get("gaia_gmag", exoplanet)
+    const optmag = get("st_optmag", exoplanet)
+    let apparentMag
+    if (gmag === EMPTY_VALUE && optmag === EMPTY_VALUE) {
+        return [0, 0]
+    } else if (gmag !== EMPTY_VALUE && optmag === EMPTY_VALUE) {
+        apparentMag = gmag
+    } else if (gmag === EMPTY_VALUE && optmag !== EMPTY_VALUE) {
+        apparentMag = optmag
+    }
+    let distance = get("st_dist", exoplanet)
+    const type = get("st_spstr", exoplanet).substring(0, 1)
+    const index = SPECTRAL_TYPES.indexOf(type)
+    let mV = apparentMag - (5 * Math.log(distance))
+    let bc = index !== -1 ? SPECTRAL_BC[index] : -2.0
+    let mBOL = mV + bc
+    let lstar = Math.pow(10, (mBOL - SOL_MAG) / POGSON)
+    return [Math.sqrt(lstar / FLUX_INNER).toFixed(2), Math.sqrt(lstar / FLUX_OUTTER).toFixed(2)]
 }
 
 /**
@@ -260,9 +306,20 @@ function listItemClick(rowid) {
     window.location = BASE_URL + "?id=" + String(rowid)
 }
 
-function tryMainDetail(value, label) {
+function outputMainDetail(value, label) {
+    value = value.toString()
     $("div.main-details-container div.main-details-labels").append(getMainDetailLabelHTML(label))
-    $("div.main-details-container div.main-details-values").append(getMainDetailValueHTML(value === EMPTY_VALUE ? "Unknown" : value))
+    $("div.main-details-container div.main-details-values").append(getMainDetailValueHTML(value.includes(EMPTY_VALUE) ? "<span style=\"color:grey\">Unknown</span>" : value))
+}
+
+function outputAllDetails(exoplanet) {
+    let labels = $("div.all-data-container div.all-data-labels")
+    let values = $("div.all-data-container div.all-data-values")
+    for (let value of VALUES) {
+        labels.append(getMainDetailLabelHTML(value))
+        const v = get(value, exoplanet)
+        values.append(getMainDetailValueHTML(v.includes(EMPTY_VALUE) ? "<span style=\"color:grey\">Unknown</span>" : v))
+    }
 }
 
 function go_details(rowid) {
@@ -275,15 +332,37 @@ function go_details(rowid) {
             break
         }
     }
-    $("div.main-card-text > h1").html(get("pl_name", exoplanet))
-    tryMainDetail(get("st_dist", exoplanet), "Distance (ly)")
-    tryMainDetail(get("pl_orbper", exoplanet), "Orbit (days)")
-    tryMainDetail(get("pl_masse", exoplanet), "Mass (Earth)")
-    tryMainDetail(get("pl_rade", exoplanet), "Radius (Earth)")
-    tryMainDetail(get("pl_orbeccen", exoplanet), "Eccentricity")
-    tryMainDetail(get("pl_disc", exoplanet) + " by " + get("pl_discmethod", exoplanet), "Discovered")
+    const name = get("pl_name", exoplanet)
+    $("title").html(name)
+
+    // main card
+
+    $("div.main-card-text > h1").html(name)
+    outputMainDetail((get("st_dist", exoplanet) * PARSEC_LIGHTYEAR), "Distance (ly)")
+    outputMainDetail(get("pl_orbper", exoplanet), "Orbit (days)")
+    outputMainDetail(get("pl_masse", exoplanet), "Mass (Earth)")
+    outputMainDetail(get("pl_rade", exoplanet), "Radius (Earth)")
+    outputMainDetail(get("pl_orbeccen", exoplanet), "Eccentricity")
+    outputMainDetail(get("pl_disc", exoplanet) + " (" + get("pl_discmethod", exoplanet) + ")", "Discovered")
+
+    // not working yet
+    /*const goldilocks = getHabitableZone(exoplanet)
+    if (goldilocks[0] !== 0 && goldilocks[1] !== 0 && goldilocks[0] !== goldilocks[1]) {
+        outputMainDetail(goldilocks[0] + " to " + goldilocks[1], "Goldilocks (AU)")
+        const ratdor = get("pl_ratdor", exoplanet)
+        const starRad = get("st_rad", exoplanet)
+        if (ratdor !== EMPTY_VALUE && starRad !== EMPTY_VALUE) {
+            const planetDistance = parseFloat(ratdor) / parseFloat(starRad)
+            const habitable = planetDistance >= goldilocks[0] && planetDistance <= goldilocks[1] ? "<span style=\"color:lightgreen\">Yes</span>" : "<span style=\"color:red\">No</span>"
+            outputMainDetail(habitable + " (" + planetDistance + ")", "Habitable")
+        }
+    }*/
 
     setVisual(exoplanet, $("div.main-card > div.main-card-visual"), MIN_RAD2, MAX_RAD2, MIN_VISUAL2, MAX_VISUAL2)
+
+    // details card
+
+    outputAllDetails(exoplanet)
 }
 
 function go_test() {

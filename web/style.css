@@ -7,13 +7,21 @@ html {
     color: whitesmoke
 }
 
-div.list-container {
+div.scroll-container {
     display: flex;
-    flex-flow: column nowrap;
-    width: 500px;
-    height: 500px;
     overflow-x: hidden;
     overflow-y: auto
+}
+
+div.list-container {
+    flex-flow: column nowrap;
+    width: 500px;
+    height: 500px
+}
+
+div.all-data-container {
+    width: 400px;
+    height: 350px
 }
 
 div.list-container.list-container-empty {
@@ -73,7 +81,8 @@ div.list-container span.title {
 }
 
 div.list-container span.list-value-label,
-div.main-card div.main-card-text span.value-label {
+div.main-card div.main-card-text span.value-label,
+div.all-data-container > div.all-data-labels span.value-label {
     color: grey
 }
 
@@ -100,13 +109,30 @@ select.exo-search-type {
     background-color: black
 }
 
+div.exo-card {
+    margin-top: 18px;
+    margin-left: 32px
+}
+
+div.main-card {
+    align-items: center
+}
+
 div.main-card,
 div.details-card {
     display: flex
 }
 
+div.details-card {
+    flex-flow: column nowrap
+}
+
 div.main-card-text {
-    margin-right: 32px
+    margin-right: 42px
+}
+
+div.main-card-text > h1 {
+    text-align: center
 }
 
 div.main-details-container {
@@ -114,21 +140,27 @@ div.main-details-container {
 }
 
 div.main-details-labels,
-div.main-details-values {
+div.main-details-values,
+div.all-data-container > div.all-data-labels,
+div.all-data-container > div.all-data-values {
     display: flex;
     flex-direction: column
 }
 
 div.main-details-labels > span,
-div.main-details-values > span {
+div.main-details-values > span,
+div.all-data-container > div.all-data-labels > span,
+div.all-data-container > div.all-data-values > span {
     line-height: 1.375em
 }
 
-div.main-details-labels {
+div.main-details-labels,
+div.all-data-container > div.all-data-labels {
     text-align: right
 }
 
-div.main-details-values {
+div.main-details-values,
+div.all-data-container > div.all-data-values {
     margin-left: 8px;
     text-align: left
 }

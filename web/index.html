@@ -21,13 +21,14 @@
                 <option value="pl_disc">Discovery Year</option>
             </select>
         </div>
-        <div class="list-container list-container-empty">
+        <div class="list-container scroll-container list-container-empty">
             <span class="list-start">Results will be listed here</span>
+            <span class="list-searching" style="display:none">Searching...</span>
             <span class="list-none" style="display:none">No results were found</span>
         </div>
     </div>
     <div class="exo-container" id="details" style="display:none">
-        <div class="main-card">
+        <div class="exo-card main-card">
             <div class="main-card-text">
                 <h1>Exoplanet Name</h1>
                 <div class="main-details-container">
@@ -37,7 +38,13 @@
             </div>
             <div class="main-card-visual"></div>
         </div>
-        <div class="details-card"></div>
+        <div class="exo-card details-card">
+            <h3>All Data</h3>
+            <div class="all-data-container scroll-container">
+                <div class="all-data-labels"></div>
+                <div class="all-data-values"></div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
