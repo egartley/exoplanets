@@ -19,9 +19,8 @@ div.list-container {
     height: 500px
 }
 
-div.all-data-container {
-    width: 400px;
-    height: 350px
+div.exo-container {
+    margin-left: 32px
 }
 
 div.list-container.list-container-empty {
@@ -110,8 +109,7 @@ select.exo-search-type {
 }
 
 div.exo-card {
-    margin-top: 18px;
-    margin-left: 32px
+    margin-top: 18px
 }
 
 div.main-card {
@@ -131,10 +129,6 @@ div.main-card-text {
     margin-right: 42px
 }
 
-div.main-card-text > h1 {
-    text-align: center
-}
-
 div.main-details-container {
     display: flex
 }
@@ -144,7 +138,7 @@ div.main-details-values,
 div.all-data-container > div.all-data-labels,
 div.all-data-container > div.all-data-values {
     display: flex;
-    flex-direction: column
+    flex-flow: column nowrap
 }
 
 div.main-details-labels > span,
@@ -163,4 +157,26 @@ div.main-details-values,
 div.all-data-container > div.all-data-values {
     margin-left: 8px;
     text-align: left
+}
+
+div.all-data-header {
+    display: flex;
+    align-items: center
+}
+
+button {
+    background-color: #444;
+    border: solid 1px #444;
+    color: whitesmoke;
+    cursor: pointer
+}
+
+button.go-back {
+    padding: 6px 10px;
+    margin-top: 24px
+}
+
+div.all-data-header > button.all-data-toggle {
+    padding: 6px 10px;
+    margin-left: 18px
 }

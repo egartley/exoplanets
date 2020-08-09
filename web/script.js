@@ -17,6 +17,7 @@ const FLUX_OUTTER = 0.53
 const SPECTRAL_TYPES = ["B", "A", "F", "G", "K", "M"]
 const SPECTRAL_BC = [-2.0, -0.3, -0.15, -0.4, -0.8, -2.0]
 
+const LIMIT = 4197
 const EMPTY_VALUE = "EMPTY"
 const BASE_URL = "/exo/"
 const SEARCH_TYPES = ["pl_name", "pl_hostname", "pl_disc"]
@@ -219,8 +220,8 @@ function setVisual(exoplanet, visual, minRad, maxRad, minSize, maxSize) {
  * Prepare the list container for displaying results
  */
 function list_readyResults() {
-    $("div.list-container span.list-start").hide()
-    $("div.list-container span.list-none").hide()
+    $("div.list-container > span.list-start").hide()
+    $("div.list-container > span.list-none").hide()
     $("div.list-container").removeClass("list-container-empty")
     $("div.list-container > div.list-item").off()
     $("div.list-container > div.list-item").remove()
@@ -232,18 +233,18 @@ function list_readyResults() {
 function list_noResults() {
     $("div.list-container > div.list-item").remove()
     $("div.list-container").addClass("list-container-empty")
-    $("div.list-container span.list-none").show()
-    $("div.list-container span.list-start").hide()
+    $("div.list-container > span.list-none").show()
+    $("div.list-container > span.list-start").hide()
 }
 
 function exoKeyUp(e) {
     const key = e.keyCode || e.which;
     if (13 === key) {
-        executeQuery($("input.exo-search").val())
+        exoDoQuery($("input.exo-search").val())
     }
 }
 
-function executeQuery(query) {
+function exoDoQuery(query) {
     // get search type, make sure it's valid
     const searchType = $("select.exo-search-type").val()
     let valid = false
@@ -258,7 +259,10 @@ function executeQuery(query) {
     }
     // validate the query
     valid = false
-    const originalQuery = query
+    if (query === "") {
+        return
+    }
+    const originalQuery = query.toLowerCase()
     if (query.includes(" ")) {
         query = query.replace(/\s/g, "")
     }
@@ -280,7 +284,7 @@ function exoSearch(query, type) {
     let cleared = false
     const list = $("div.list-container")
     $.each(DATA, function (index, exoplanet) {
-        if (get(type, exoplanet).includes(query)) {
+        if (String(get(type, exoplanet)).toLowerCase().includes(query)) {
             if (!cleared) {
                 list_readyResults()
                 cleared = true
@@ -288,17 +292,21 @@ function exoSearch(query, type) {
             list.append(getListItemHTML(exoplanet))
             const rowid = get("rowid", exoplanet)
             setVisual(exoplanet, $("div.list-item#" + rowid + " > div.left > div.visual"), MIN_RAD, MAX_RAD, MIN_VISUAL, MAX_VISUAL)
-            registerListItemClick(rowid)
         }
     })
     if (!cleared) {
         list_noResults()
+    } else {
+        exoRegisterListItemClicks()
     }
 }
 
-function registerListItemClick(rowid) {
-    $("div.list-container > div.list-item#" + String(rowid)).on("click", function (event) {
-        listItemClick(rowid)
+function exoRegisterListItemClicks() {
+    $("div.list-container > div.list-item").each(function () {
+        const rowid = $(this).attr("id")
+        $("div.list-container > div.list-item#" + rowid).on("click", function() {
+            listItemClick(rowid)
+        })
     })
 }
 
@@ -363,14 +371,31 @@ function go_details(rowid) {
     // details card
 
     outputAllDetails(exoplanet)
+
+    let button = $("button.all-data-toggle")
+    button.on("click", function(event) {
+        let alldata = $("div.all-data-container")
+        if (alldata.is(":visible")) {
+            button.html("Show")
+            alldata.hide()
+        } else {
+            button.html("Hide")
+            alldata.show()
+        }
+    })
+
+    let goback = $("button.go-back")
+    goback.on("click", function(event) {
+        window.location = BASE_URL
+    })
 }
 
-function go_test() {
+function exoGo() {
     const id = getURLParameter("id")
-    if (id === "") {
-        list_noResults()
-    } else {
+    if (/[0-9]/.test(id) && parseFloat(id) <= LIMIT && parseFloat(id) >= 0) {
         go_details(id)
+    } else if (id !== "") {
+        alert("Invalid ID (must be between 0 and " + LIMIT + ")")
     }
     /*list_readyResults()
     $.each(DATA, function (index, exoplanet) {
@@ -381,16 +406,12 @@ function go_test() {
     })*/
 }
 
-/*function go() {
-    
-}*/
-
 $(document).ready(function () {
     $.getJSON("values.json", function (values) {
         $.getJSON("data.json", function (data) {
             VALUES = values
             DATA = data
-            go_test()
+            exoGo()
         })
     })
 })

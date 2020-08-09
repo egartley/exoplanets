@@ -10,41 +10,46 @@
     <script src="script.js" type="application/javascript"></script>
 </head>
 <body>
-    <div class="exo-container" id="search">
-        <h2>Exoplanets</h2>
-        <div class="exo-search-container">
-            <input name="exo-search" class="exo-search" onkeyup="exoKeyUp(event)">
-            <span class="search-by">Search by:</span>
-            <select name="exo-search-type" class="exo-search-type">
-                <option value="pl_name">Name</option>
-                <option value="pl_hostname">Host Star</option>
-                <option value="pl_disc">Discovery Year</option>
-            </select>
-        </div>
-        <div class="list-container scroll-container list-container-empty">
-            <span class="list-start">Results will be listed here</span>
-            <span class="list-searching" style="display:none">Searching...</span>
-            <span class="list-none" style="display:none">No results were found</span>
-        </div>
+<div class="exo-container" id="search">
+    <h2>Exoplanets</h2>
+    <div class="exo-search-container">
+        <input name="exo-search" class="exo-search" onkeyup="exoKeyUp(event)">
+        <span class="search-by">Search by:</span>
+        <select name="exo-search-type" class="exo-search-type">
+            <option value="pl_name">Name</option>
+            <option value="pl_hostname">Host Star</option>
+            <option value="pl_disc">Discovery Year</option>
+        </select>
     </div>
-    <div class="exo-container" id="details" style="display:none">
-        <div class="exo-card main-card">
-            <div class="main-card-text">
-                <h1>Exoplanet Name</h1>
-                <div class="main-details-container">
-                    <div class="main-details-labels"></div>
-                    <div class="main-details-values"></div>
-                </div>
-            </div>
-            <div class="main-card-visual"></div>
-        </div>
-        <div class="exo-card details-card">
-            <h3>All Data</h3>
-            <div class="all-data-container scroll-container">
-                <div class="all-data-labels"></div>
-                <div class="all-data-values"></div>
+    <div class="list-container scroll-container list-container-empty">
+        <span class="list-start">Results will be listed here</span>
+        <span class="list-none" style="display:none">No results were found</span>
+    </div>
+</div>
+<div class="exo-container" id="details" style="display:none">
+    <div class="exo-card">
+        <button class="go-back">Back to Results</button>
+    </div>
+    <div class="exo-card main-card">
+        <div class="main-card-text">
+            <h1>Exoplanet Name</h1>
+            <div class="main-details-container">
+                <div class="main-details-labels"></div>
+                <div class="main-details-values"></div>
             </div>
         </div>
+        <div class="main-card-visual"></div>
     </div>
+    <div class="exo-card details-card">
+        <div class="all-data-header">
+            <h2>Raw Data</h2>
+            <button class="all-data-toggle">Show</button>
+        </div>
+        <div class="all-data-container scroll-container" style="display:none">
+            <div class="all-data-labels"></div>
+            <div class="all-data-values"></div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
