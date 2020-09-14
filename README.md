@@ -1,9 +1,9 @@
 # Exoplanets
 Visualizer and interface for confirmed exoplanets' data.
 
-Data is sourced from the [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=planets) (DOI 10.26133/NEA1) as a CSV file and converted to JSON with `csv-to-json.py`. Two files are created, `data.json` and `values.json`, which contain all of the data and value names. Putting the value names in a seperate file dramatically decreases the size of the data file, which is already quite large. Chunked, or incremental loading will be added at a later date to better manage the data as it increases when new exoplanets are discovered and confirmed.
+A working "demo" can be accessed [here](https://egartley.net/projects/exoplanets/?via=ghreadmeearlyaugust). The only modifications made are the base URL in `script.js` and small corrections in `style.css` to avoid conflicts with the website's own styling.
 
-A working "demo" can be accessed at the [project page](https://egartley.net/projects/exoplanets/?via=ghreadmeearlyaugust). The only modifications made are the base URL in `script.js` and small corrections in `style.css` to avoid conflicts with the website's own styling.
+Data is sourced from the [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=planets) (DOI 10.26133/NEA1) as a CSV file and converted to JSON with `csv-to-json.py`. Two files are created, `data.json` and `values.json`, which contain all of the data and value names. Putting the value names in a seperate file dramatically decreases the size of the data file, which is already quite large. Chunked, or incremental loading will be added at a later date to better manage the data as it increases when new exoplanets are discovered and confirmed.
 
 ## Current Functionality
 - Search through the data by name, host star or year discovered
