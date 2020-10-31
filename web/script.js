@@ -21,9 +21,11 @@ const LIMIT = 4197
 const EMPTY_VALUE = "EMPTY"
 const BASE_URL = "/exo/"
 const SEARCH_TYPES = ["pl_name", "pl_hostname", "pl_disc"]
+const DEFAULT_MAX_RESULTS = 20
 
 let VALUES = []
 let DATA = []
+let LAST_DATA_KEY = ""
 
 /**
  * Returns the specified data value of an exoplanet
@@ -85,40 +87,25 @@ function hsvToRgb(h, s, v) {
     t = v * (1 - (1 - f) * s);
     switch (i % 6) {
         case 0:
-            r = v
-            g = t
-            b = p
-            break
+            r = v, g = t, b = p;
+            break;
         case 1:
-            r = q
-            g = v
-            b = p
-            break
+            r = q, g = v, b = p;
+            break;
         case 2:
-            r = p
-            g = v
-            b = t
-            break
+            r = p, g = v, b = t;
+            break;
         case 3:
-            r = p
-            g = q
-            b = v
-            break
+            r = p, g = q, b = v;
+            break;
         case 4:
-            r = t
-            g = p
-            b = v
-            break
+            r = t, g = p, b = v;
+            break;
         case 5:
-            r = v
-            g = p
-            b = q
-            break
+            r = v, g = p, b = q;
+            break;
         default:
-            r = 1
-            g = 1
-            b = 1
-            break
+            r = 1, g = 1, b = 1
     }
     return "rgb(" + Math.round(r * 255) + ", " + Math.round(g * 255) + ", " + Math.round(b * 255) + ")"
 }
@@ -136,9 +123,9 @@ function getURLParameter(parameter) {
  * @param x The number to calculate the logarithm of
  * @returns {number} log_base(x)
  */
-function getBaseLog(base, x) {
+/*function getBaseLog(base, x) {
     return Math.log(x) / Math.log(base);
-}
+}*/
 
 // Credit: https://www.planetarybiology.com/calculating_habitable_zone.html
 /**
@@ -240,6 +227,7 @@ function list_noResults() {
 function exoKeyUp(e) {
     const key = e.keyCode || e.which;
     if (13 === key) {
+        // pressed enter
         exoDoQuery($("input.exo-search").val())
     }
 }
@@ -247,12 +235,7 @@ function exoKeyUp(e) {
 function exoDoQuery(query) {
     // get search type, make sure it's valid
     const searchType = $("select.exo-search-type").val()
-    let valid = false
-    $.each(SEARCH_TYPES, function (index, type) {
-        if (type === searchType) {
-            valid = true
-        }
-    })
+    let valid = SEARCH_TYPES.includes(searchType)
     if (!valid) {
         alert("There was a problem with validating the search type! (\"" + searchType + "\")")
         return
@@ -281,9 +264,33 @@ function exoDoQuery(query) {
 }
 
 function exoSearch(query, type) {
+    let length = 1
+    let dir = "hoststar"
+    if (type === SEARCH_TYPES[2]) {
+        length = 4
+        dir = "year"
+    }
+    let key = query.substring(0, length)
+    if (LAST_DATA_KEY === key) {
+        exoRunSearch(query, type)
+    } else {
+        LAST_DATA_KEY = key
+        $.getJSON(BASE_URL + "index/" + dir + "/" + key + ".json", function (data) {
+            DATA = data
+        }).done(function () {
+            exoRunSearch(query, type)
+        })
+    }
+}
+
+function exoRunSearch(query, type) {
     let cleared = false
+    let results = 0
     const list = $("div.list-container")
     $.each(DATA, function (index, exoplanet) {
+        if (results === DEFAULT_MAX_RESULTS) {
+            return
+        }
         if (String(get(type, exoplanet)).toLowerCase().includes(query)) {
             if (!cleared) {
                 list_readyResults()
@@ -292,6 +299,7 @@ function exoSearch(query, type) {
             list.append(getListItemHTML(exoplanet))
             const rowid = get("rowid", exoplanet)
             setVisual(exoplanet, $("div.list-item#" + rowid + " > div.left > div.visual"), MIN_RAD, MAX_RAD, MIN_VISUAL, MAX_VISUAL)
+            results++
         }
     })
     if (!cleared) {
@@ -304,7 +312,7 @@ function exoSearch(query, type) {
 function exoRegisterListItemClicks() {
     $("div.list-container > div.list-item").each(function () {
         const rowid = $(this).attr("id")
-        $("div.list-container > div.list-item#" + rowid).on("click", function() {
+        $("div.list-container > div.list-item#" + rowid).on("click", function () {
             listItemClick(rowid)
         })
     })
@@ -330,16 +338,10 @@ function outputAllDetails(exoplanet) {
     }
 }
 
-function go_details(rowid) {
+function go_details() {
     $("div.exo-container#search").hide()
     $("div.exo-container#details").show()
-    let exoplanet = []
-    for (let exo of DATA) {
-        if (get("rowid", exo) === rowid) {
-            exoplanet = exo
-            break
-        }
-    }
+    let exoplanet = DATA
     const name = get("pl_name", exoplanet)
     $("title").html(name)
 
@@ -373,7 +375,7 @@ function go_details(rowid) {
     outputAllDetails(exoplanet)
 
     let button = $("button.all-data-toggle")
-    button.on("click", function(event) {
+    button.on("click", function (event) {
         let alldata = $("div.all-data-container")
         if (alldata.is(":visible")) {
             button.html("Show")
@@ -385,7 +387,7 @@ function go_details(rowid) {
     })
 
     let goback = $("button.go-back")
-    goback.on("click", function(event) {
+    goback.on("click", function (event) {
         window.location = BASE_URL
     })
 }
@@ -393,9 +395,12 @@ function go_details(rowid) {
 function exoGo() {
     const id = getURLParameter("id")
     if (/[0-9]/.test(id) && parseFloat(id) <= LIMIT && parseFloat(id) >= 0) {
-        go_details(id)
+        $.getJSON(BASE_URL + "index/id/" + id + ".json", function (data) {
+            DATA = data
+            go_details()
+        })
     } else if (id !== "") {
-        alert("Invalid ID (must be between 0 and " + LIMIT + ")")
+        alert("Invalid ID (must be between 1 and " + LIMIT + ")")
     }
     /*list_readyResults()
     $.each(DATA, function (index, exoplanet) {
@@ -408,10 +413,7 @@ function exoGo() {
 
 $(document).ready(function () {
     $.getJSON("values.json", function (values) {
-        $.getJSON("data.json", function (data) {
-            VALUES = values
-            DATA = data
-            exoGo()
-        })
+        VALUES = values
+        exoGo()
     })
 })

@@ -16,7 +16,8 @@ div.scroll-container {
 div.list-container {
     flex-flow: column nowrap;
     width: 500px;
-    height: 500px
+    height: 500px;
+    margin-left: 0 !important
 }
 
 div.exo-container {
