@@ -21,11 +21,14 @@ const LIMIT = 4197
 const EMPTY_VALUE = "EMPTY"
 const BASE_URL = "/exo/"
 const SEARCH_TYPES = ["pl_name", "pl_hostname", "pl_disc"]
-const DEFAULT_MAX_RESULTS = 20
+const DEFAULT_MAX_RESULTS = 15
 
 let VALUES = []
 let DATA = []
 let LAST_DATA_KEY = ""
+let LAST_QUERY = ""
+let LAST_SEARCHTYPE = ""
+let MORE_RESULTS = 0
 
 /**
  * Returns the specified data value of an exoplanet
@@ -228,6 +231,7 @@ function exoKeyUp(e) {
     const key = e.keyCode || e.which;
     if (13 === key) {
         // pressed enter
+        MORE_RESULTS = 0
         exoDoQuery($("input.exo-search").val())
     }
 }
@@ -286,9 +290,11 @@ function exoSearch(query, type) {
 function exoRunSearch(query, type) {
     let cleared = false
     let results = 0
+    let all = true
     const list = $("div.list-container")
     $.each(DATA, function (index, exoplanet) {
-        if (results === DEFAULT_MAX_RESULTS) {
+        if (results === DEFAULT_MAX_RESULTS + (DEFAULT_MAX_RESULTS * MORE_RESULTS)) {
+            all = false
             return
         }
         if (String(get(type, exoplanet)).toLowerCase().includes(query)) {
@@ -307,6 +313,19 @@ function exoRunSearch(query, type) {
     } else {
         exoRegisterListItemClicks()
     }
+    let button = $("button#more-results")
+    if (!all) {
+        button.show()
+    } else {
+        button.hide()
+    }
+    LAST_QUERY = query
+    LAST_SEARCHTYPE = type
+}
+
+function exoMoreResults() {
+    MORE_RESULTS++
+    exoRunSearch(LAST_QUERY, LAST_SEARCHTYPE)
 }
 
 function exoRegisterListItemClicks() {
@@ -374,7 +393,7 @@ function go_details() {
 
     outputAllDetails(exoplanet)
 
-    let button = $("button.all-data-toggle")
+    let button = $("button#all-data-toggle")
     button.on("click", function (event) {
         let alldata = $("div.all-data-container")
         if (alldata.is(":visible")) {
@@ -386,7 +405,7 @@ function go_details() {
         }
     })
 
-    let goback = $("button.go-back")
+    let goback = $("button#go-back")
     goback.on("click", function (event) {
         window.location = BASE_URL
     })
@@ -394,13 +413,19 @@ function go_details() {
 
 function exoGo() {
     const id = getURLParameter("id")
-    if (/[0-9]/.test(id) && parseFloat(id) <= LIMIT && parseFloat(id) >= 0) {
+    if (/[0-9]/.test(id) && parseFloat(id) <= LIMIT && parseFloat(id) >= 1) {
         $.getJSON(BASE_URL + "index/id/" + id + ".json", function (data) {
             DATA = data
             go_details()
         })
-    } else if (id !== "") {
-        alert("Invalid ID (must be between 1 and " + LIMIT + ")")
+    } else {
+        if (id !== "") {
+            alert("Invalid ID (must be between 1 and " + LIMIT + ")")
+        }
+        let button = $("button#more-results")
+        button.on("click", function () {
+            exoMoreResults()
+        })
     }
     /*list_readyResults()
     $.each(DATA, function (index, exoplanet) {
