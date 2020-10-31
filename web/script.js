@@ -17,10 +17,10 @@ const FLUX_OUTTER = 0.53
 const SPECTRAL_TYPES = ["B", "A", "F", "G", "K", "M"]
 const SPECTRAL_BC = [-2.0, -0.3, -0.15, -0.4, -0.8, -2.0]
 
-const LIMIT = 4197
+const LIMIT = 26832
 const EMPTY_VALUE = "EMPTY"
 const BASE_URL = "/exo/"
-const SEARCH_TYPES = ["pl_name", "pl_hostname", "pl_disc"]
+const SEARCH_TYPES = ["pl_name", "hostname", "disc_year"]
 const DEFAULT_MAX_RESULTS = 15
 
 let VALUES = []
@@ -42,8 +42,8 @@ function get(value, exoplanet) {
     return i !== -1 ? (exoplanet[i] !== "" ? exoplanet[i] : EMPTY_VALUE) : EMPTY_VALUE
 }
 
-function getListItemDataHTML(label, value, prettyName) {
-    return "<span class=\"" + prettyName + "\"><span class=\"list-value-label\">" + label + ":</span> " + String(value) + "</span>"
+function getListItemDataHTML(label, value) {
+    return "<span><span class=\"list-value-label\">" + label + ":</span> " + value + "</span>"
 }
 
 /**
@@ -55,13 +55,13 @@ function getListItemDataHTML(label, value, prettyName) {
 function getListItemHTML(exoplanet) {
     const rowid = get("rowid", exoplanet)
     const name = get("pl_name", exoplanet)
-    const year = get("pl_disc", exoplanet)
-    let distance = get("st_dist", exoplanet)
+    const year = get("disc_year", exoplanet)
+    let distance = get("sy_dist", exoplanet)
     // distance is in parsecs, so convert to lightyears
     distance *= PARSEC_LIGHTYEAR
     // truncate to two decimals
     distance = distance.toFixed(2)
-    return "<div class=\"list-item\" id=\"" + rowid + "\"><div class=\"left\"><div class=\"visual\"></div></div><div class=\"right\"><span class=\"title\">" + name + "</span>" + getListItemDataHTML("Found in", year, "year") + getListItemDataHTML("Distance", distance + " ly", "distance") + "</div></div>"
+    return "<div class=\"list-item\" id=\"" + rowid + "\"><div class=\"left\"><div class=\"visual\"></div></div><div class=\"right\"><span class=\"title\">" + name + "</span>" + getListItemDataHTML("Found in", year) + getListItemDataHTML("Distance", distance + " ly") + "</div></div>"
 }
 
 function getMainDetailLabelHTML(label) {
@@ -148,7 +148,7 @@ function getHabitableZone(exoplanet) {
     } else if (gmag === EMPTY_VALUE && optmag !== EMPTY_VALUE) {
         apparentMag = optmag
     }
-    let distance = get("st_dist", exoplanet)
+    let distance = get("sy_dist", exoplanet)
     const type = get("st_spstr", exoplanet).substring(0, 1)
     const index = SPECTRAL_TYPES.indexOf(type)
     let mV = apparentMag - (5 * Math.log(distance))
@@ -281,8 +281,9 @@ function exoSearch(query, type) {
         LAST_DATA_KEY = key
         $.getJSON(BASE_URL + "index/" + dir + "/" + key + ".json", function (data) {
             DATA = data
-        }).done(function () {
             exoRunSearch(query, type)
+        }).fail(function () {
+            list_noResults()
         })
     }
 }
@@ -357,56 +358,44 @@ function outputAllDetails(exoplanet) {
     }
 }
 
-function go_details() {
+function go_details(rowid) {
     $("div.exo-container#search").hide()
     $("div.exo-container#details").show()
-    let exoplanet = DATA
+
+    let exoplanet = []
+    for (let exo of DATA) {
+        if (get("rowid", exo) === rowid) {
+            exoplanet = exo
+            break
+        }
+    }
+
     const name = get("pl_name", exoplanet)
     $("title").html(name)
-
-    // main card
-
     $("div.main-card-text > h1").html(name)
-    outputMainDetail((get("st_dist", exoplanet) * PARSEC_LIGHTYEAR), "Distance (ly)")
+    outputMainDetail((get("sy_dist", exoplanet) * PARSEC_LIGHTYEAR), "Distance (ly)")
     outputMainDetail(get("pl_orbper", exoplanet), "Orbit (days)")
     outputMainDetail(get("pl_masse", exoplanet), "Mass (Earth)")
     outputMainDetail(get("pl_rade", exoplanet), "Radius (Earth)")
     outputMainDetail(get("pl_orbeccen", exoplanet), "Eccentricity")
-    outputMainDetail(get("pl_disc", exoplanet) + " (" + get("pl_discmethod", exoplanet) + ")", "Discovered")
-
-    // not working yet
-    /*const goldilocks = getHabitableZone(exoplanet)
-    if (goldilocks[0] !== 0 && goldilocks[1] !== 0 && goldilocks[0] !== goldilocks[1]) {
-        outputMainDetail(goldilocks[0] + " to " + goldilocks[1], "Goldilocks (AU)")
-        const ratdor = get("pl_ratdor", exoplanet)
-        const starRad = get("st_rad", exoplanet)
-        if (ratdor !== EMPTY_VALUE && starRad !== EMPTY_VALUE) {
-            const planetDistance = parseFloat(ratdor) / parseFloat(starRad)
-            const habitable = planetDistance >= goldilocks[0] && planetDistance <= goldilocks[1] ? "<span style=\"color:lightgreen\">Yes</span>" : "<span style=\"color:red\">No</span>"
-            outputMainDetail(habitable + " (" + planetDistance + ")", "Habitable")
-        }
-    }*/
+    outputMainDetail(get("disc_year", exoplanet) + " (" + get("discoverymethod", exoplanet) + ")", "Discovered")
 
     setVisual(exoplanet, $("div.main-card > div.main-card-visual"), MIN_RAD2, MAX_RAD2, MIN_VISUAL2, MAX_VISUAL2)
 
-    // details card
-
     outputAllDetails(exoplanet)
 
-    let button = $("button#all-data-toggle")
-    button.on("click", function (event) {
+    $("button#all-data-toggle").on("click", function () {
         let alldata = $("div.all-data-container")
         if (alldata.is(":visible")) {
-            button.html("Show")
+            $(this).html("Show")
             alldata.hide()
         } else {
-            button.html("Hide")
+            $(this).html("Hide")
             alldata.show()
         }
     })
 
-    let goback = $("button#go-back")
-    goback.on("click", function (event) {
+    $("button#go-back").on("click", function () {
         window.location = BASE_URL
     })
 }
@@ -414,9 +403,9 @@ function go_details() {
 function exoGo() {
     const id = getURLParameter("id")
     if (/[0-9]/.test(id) && parseFloat(id) <= LIMIT && parseFloat(id) >= 1) {
-        $.getJSON(BASE_URL + "index/id/" + id + ".json", function (data) {
+        $.getJSON(BASE_URL + "index/id/" + Math.floor(id / 1000) + ".json", function (data) {
             DATA = data
-            go_details()
+            go_details(id)
         })
     } else {
         if (id !== "") {
@@ -427,13 +416,6 @@ function exoGo() {
             exoMoreResults()
         })
     }
-    /*list_readyResults()
-    $.each(DATA, function (index, exoplanet) {
-        if (index < TEST_LIMIT) {
-            $("div.list-container").append(getListItemHTML(exoplanet))
-            setVisual(exoplanet)
-        }
-    })*/
 }
 
 $(document).ready(function () {

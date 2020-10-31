@@ -8,7 +8,6 @@ DATA_DIR = "C:/Users/egart/Desktop/Development/Exoplanet/data/"
 DATA_FILE = "data.json"
 VALUES_FILE = "values.json"
 
-# Credit: https://github.com/egartley/school/blob/master/CS%20102/Homework/Homework%209.py
 def read_in(filename):
     data = []
     with open(filename) as file:
@@ -44,17 +43,11 @@ if clear:
 # gather data
 names = get_value_names(IN_FILE)
 csv_data = read_in(IN_FILE)
-# rads = []
-
-# for p in csv_data:
-	# rads.append(p[49] + " ")
 
 # write files
 with open(os.path.join(DATA_DIR, DATA_FILE), "w") as file:
 	json.dump(csv_data, file)
 with open(os.path.join(DATA_DIR, VALUES_FILE), "w") as file:
 	json.dump(names, file)
-# with open(os.path.join(DATA_DIR, "rad.txt"), "w") as file:
-	# file.write("".join(rads))
 
 input("Done!")
