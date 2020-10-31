@@ -3,7 +3,7 @@ Visualizer and interface for confirmed exoplanets' data.
 
 A working "demo" can be accessed [here](https://egartley.net/projects/exoplanets/). The only modifications made are the base URL in `script.js` and small corrections in `style.css` to avoid conflicts with the website's own styling.
 
-Data is sourced from the [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=planets) (DOI 10.26133/NEA1) as a CSV file and converted to JSON with `csv-to-json.py`. Two files are created, `data.json` and `values.json`, which contain all of the data and value names.
+Data is sourced from the [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=PS) (DOI 10.26133/NEA12) as a CSV file and converted to JSON with `csv-to-json.py`. Two files are created, `data.json` and `values.json`, which contain all of the data and value names.
 
 Putting the value names in a seperate file dramatically decreases the size of the data file, which is already quite large.
 
